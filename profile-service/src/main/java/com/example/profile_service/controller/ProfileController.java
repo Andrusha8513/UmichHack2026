@@ -1,9 +1,7 @@
 package com.example.profile_service.controller;
 
 import com.example.profile_service.dto.PrivetUserProfileDto;
-import com.example.profile_service.dto.ProfileDashboardResponseDto;
-import com.example.profile_service.dto.PvzDetailsDto;
-import com.example.profile_service.dto.PvzShortDto;
+
 import com.example.profile_service.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,41 +34,7 @@ public class ProfileController {
         }
     }
 
-    @GetMapping("/getMyPvzShort/{id}")
-    @PreAuthorize("hasAuthority('ROLE_OWNER_PVZ') or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<List<PvzShortDto>> getMyPvzShort(@PathVariable Long id){
-        try {
-            List<PvzShortDto> pvzShortDto = profileService.getMyPvzShort(id);
-            return ResponseEntity.ok(pvzShortDto);
-        }catch (RuntimeException e){
-            log.info("Причина ошибки " + e);
-            return ResponseEntity.badRequest().build();
-        }
-    }
 
-    @GetMapping("/getPvzDetailsDto/{id}")
-    @PreAuthorize("hasAuthority('ROLE_OWNER_PVZ') or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<PvzDetailsDto> getPvzDetailsDto(@PathVariable Long id){
-        try {
-            PvzDetailsDto dto = profileService.getPvzDetailsDto(id);
-            return ResponseEntity.ok(dto);
-        }catch (RuntimeException e){
-            log.info("Причина ошибки " + e);
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/findProfile")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ProfileDashboardResponseDto> findProfile(@RequestParam String email){
-        try {
-            ProfileDashboardResponseDto profile =  profileService.findProfilee(email);
-            return ResponseEntity.ok(profile);
-        }catch (Exception e){
-            log.info("Причина ошибки " + e);
-            return ResponseEntity.badRequest().build();
-        }
-    }
 
     @PostMapping("/setAvatar/{id}")
     @PreAuthorize("@securityService.isOwner(#id) or hasAuthority('ROLE_ADMIN')")

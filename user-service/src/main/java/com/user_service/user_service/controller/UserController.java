@@ -4,6 +4,7 @@ package com.user_service.user_service.controller;
 import com.example.support_module.jwt.Role;
 
 import com.user_service.user_service.UserService;
+import com.user_service.user_service.dto.UniversityRegistrationDto;
 import com.user_service.user_service.dto.UserRegistrationDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,16 @@ public class UserController {
         try {
             userService.createUsers(usersDto);
             return ResponseEntity.ok().body("Пользователь зарегистрирован");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/registrationUniversity")
+    public ResponseEntity<String> registrationUserUniversity(@RequestBody UniversityRegistrationDto universityRegistrationDto) {
+        try {
+            userService.createUniversity(universityRegistrationDto);
+            return ResponseEntity.ok().body("Вуз зарегистрирован");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

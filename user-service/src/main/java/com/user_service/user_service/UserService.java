@@ -5,10 +5,8 @@ import com.example.support_module.redis.RedisEmailService;
 import com.example.support_module.redis.RedisJwtService;
 
 
-import com.user_service.user_service.dto.EmailRequestDto;
-import com.user_service.user_service.dto.ProfileDto;
-import com.user_service.user_service.dto.UserCredentialsDto;
-import com.user_service.user_service.dto.UserRegistrationDTO;
+import com.user_service.user_service.dto.*;
+import com.user_service.user_service.dto.mapping.UniversityMapper;
 import com.user_service.user_service.dto.mapping.UserMapper;
 import com.user_service.user_service.exeptionHandler.TooManyRequestsException;
 import com.user_service.user_service.kafka.KafkaProducer;
@@ -37,7 +35,8 @@ public class UserService {
     private final RedisJwtService redisJwtService;
     private final KafkaProducer kafkaProducer;
     private final RedisEmailService redisEmailService;
-    private final NewJwtService newJwtService;
+    private final UniversityMapper universityMapper;
+
 
 
     /**
@@ -61,10 +60,13 @@ public class UserService {
         Users users = userMapper.toEntity(userDto);
         String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
-//        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(1);
-//        users.setTtlEmailCode(expireDate);
+        if (userDto.getRole() != null) {
+            if (userDto.getRole().equals(Role.ROLE_STUDENT)) {
+                users.setRoles(Set.of(Role.ROLE_STUDENT));
+            }
+        }
 
-        users.setRoles(Set.of(Role.ROLE_USER));
+
         users.setPassword(passwordEncoder.encode(users.getPassword()));
         users.setConfirmationCode(code);
         userRepository.save(users);
@@ -93,6 +95,52 @@ public class UserService {
         profileDto.setEmail(users.getEmail());
         profileDto.setSurName(userDto.getSurName());
         kafkaProducer.sendPrivetProfileToKafka(profileDto);
+
+    }
+
+    @Transactional
+    public void createUniversity(UniversityRegistrationDto universityRegistrationDto) {
+        if (userRepository.findByEmail((universityRegistrationDto.email())).isPresent()) {
+            throw new IllegalArgumentException("Пользователь с такой почтой уже существует");
+        }
+        if (universityRegistrationDto.password().length() < 8) {
+            throw new IllegalArgumentException("Пароль должен быть длинней восьми символом");
+        }
+        Users users = universityMapper.toEntity(universityRegistrationDto);
+        String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+
+        if (universityRegistrationDto.role() != null) {
+            if (universityRegistrationDto.role().equals(Role.ROLE_UNIVERSITY)) {
+                users.setRoles(Set.of(Role.ROLE_UNIVERSITY));
+            }
+        }
+
+
+        users.setPassword(passwordEncoder.encode(users.getPassword()));
+        users.setConfirmationCode(code);
+        userRepository.save(users);
+
+        try {
+            redisEmailService.saveEmailConfirmation(code);
+        } catch (Exception e) {
+            log.error("ОШИБКА ОТПРАВКИ В REDIS: ", e);
+        }
+
+        EmailRequestDto emailRequestDto = new EmailRequestDto();
+        emailRequestDto.setTo(users.getEmail());
+        emailRequestDto.setCode(users.getConfirmationCode());
+        emailRequestDto.setType(EmailRequestDto.EmailType.CONFIRMATION);
+        try {
+            kafkaProducer.sendEmailToKafka(emailRequestDto);
+        } catch (Exception e) {
+            log.error("ОШИБКА ОТПРАВКИ В KAFKA: ", e);
+        }
+
+
+        UniversityDto  universityDto = universityMapper.toDto(users);
+        universityDto.setUniversity(universityRegistrationDto.university());
+        kafkaProducer.sendPrivetUniversityToKafka(universityDto);
+
     }
 
     /**
@@ -127,7 +175,7 @@ public class UserService {
      *
      * @param userCredentialsDto учётные данные (email и пароль)
      * @return DTO с access и refresh токенами
-     * @throws AuthenticationException если email или пароль неверны
+     * @throws AuthenticationException  если email или пароль неверны
      * @throws IllegalArgumentException если аккаунт не активирован
      */
     public JwtAuthenticationDto singIn(UserCredentialsDto userCredentialsDto) throws AuthenticationException {
@@ -199,7 +247,7 @@ public class UserService {
      * Полный выход из системы: удаляет refresh-токен пользователя из БД
      * и добавляет access-токен в чёрный список Redis.
      *
-     * @param userId идентификатор пользователя
+     * @param userId      идентификатор пользователя
      * @param accessToken текущий access-токен
      */
     @Transactional
@@ -292,9 +340,9 @@ public class UserService {
      * @param email email пользователя
      * @throws TooManyRequestsException если лимит превышен
      */
-    private void checkEmailRateLimit(String email){
+    private void checkEmailRateLimit(String email) {
         long count = redisEmailService.incrementEmailCount(email);
-        if(count > 3){
+        if (count > 3) {
             throw new TooManyRequestsException("Слишком много запросов. Попробуйте через 15 минут.");
         }
     }
@@ -332,8 +380,8 @@ public class UserService {
      * Сбрасывает пароль с использованием кода подтверждения.
      * Проверяет код и его срок действия, обновляет пароль (хеширует), очищает временные поля.
      *
-     * @param email email пользователя
-     * @param code код подтверждения
+     * @param email       email пользователя
+     * @param code        код подтверждения
      * @param newPassword новый пароль
      * @throws IllegalArgumentException если пользователь не найден, код неверен или истёк,
      *                                  либо пароль слишком короткий
@@ -361,7 +409,7 @@ public class UserService {
      * Начинает процесс смены email. Генерирует код, сохраняет pendingEmail и код,
      * отправляет письмо на старый адрес.
      *
-     * @param email старый email
+     * @param email    старый email
      * @param newEmail новый email
      * @throws IllegalArgumentException если пользователь не найден или новый email уже занят
      */
@@ -422,7 +470,7 @@ public class UserService {
      * Подтверждает смену email. Проверяет код, обновляет email пользователя на pendingEmail,
      * очищает временные поля и отправляет обновлённый профиль в Kafka.
      *
-     * @param id идентификатор пользователя
+     * @param id   идентификатор пользователя
      * @param code код подтверждения
      * @throws IllegalArgumentException если пользователь не найден или код неверен/истёк
      */
@@ -442,7 +490,7 @@ public class UserService {
         users.setEmailChangeCode(null);
         userRepository.save(users);
 
-        ProfileDto profileDto  = new ProfileDto();
+        ProfileDto profileDto = new ProfileDto();
         profileDto.setEmail(users.getEmail());
         kafkaProducer.sendPrivetProfileToKafka(profileDto);
 
@@ -452,11 +500,11 @@ public class UserService {
      * Обновляет пароль пользователя (для авторизованных пользователей).
      * Требует текущий пароль для проверки, затем сохраняет новый (хешированный).
      *
-     * @param id идентификатор пользователя
-     * @param newPassword новый пароль
+     * @param id             идентификатор пользователя
+     * @param newPassword    новый пароль
      * @param currenPassword текущий пароль
      * @throws IllegalArgumentException если пользователь не найден,
-     *         текущий пароль не указан или неверен, новый пароль слишком короткий
+     *                                  текущий пароль не указан или неверен, новый пароль слишком короткий
      */
     @Transactional
     public void updateUserPassword(Long id,
@@ -495,7 +543,7 @@ public class UserService {
      * Обновляет роли пользователя. После сохранения генерирует новые токены
      * и сохраняет их.
      *
-     * @param id идентификатор пользователя
+     * @param id      идентификатор пользователя
      * @param newRole новый набор ролей
      * @throws IllegalArgumentException если пользователь не найден или роли пусты
      */
@@ -526,7 +574,7 @@ public class UserService {
      * Изменяет статус аккаунта (enable). При деактивации сбрасывает refresh-токен
      * и добавляет пользователя в чёрный список Redis.
      *
-     * @param id идентификатор пользователя
+     * @param id               идентификатор пользователя
      * @param newAccountStatus новый статус (true – активирован, false – деактивирован)
      * @throws UsernameNotFoundException если пользователь не найден
      */
@@ -546,7 +594,7 @@ public class UserService {
      * Блокирует или разблокирует аккаунт (accountNonLocked).
      * Сбрасывает refresh-токен и управляет чёрным списком (блокировка/разблокировка в Redis).
      *
-     * @param id идентификатор пользователя
+     * @param id               идентификатор пользователя
      * @param newAccountStatus true – разблокирован, false – заблокирован
      * @throws UsernameNotFoundException если пользователь не найден
      */
@@ -571,7 +619,7 @@ public class UserService {
     /**
      * Обновляет имя пользователя и отправляет изменённый профиль в Kafka.
      *
-     * @param id идентификатор пользователя
+     * @param id      идентификатор пользователя
      * @param newName новое имя
      * @throws UsernameNotFoundException если пользователь не найден
      */
@@ -583,7 +631,7 @@ public class UserService {
         users.setName(newName);
         userRepository.save(users);
 
-        ProfileDto profileDto  = userMapper.toTestProfileDto(users);
+        ProfileDto profileDto = userMapper.toTestProfileDto(users);
         kafkaProducer.sendPrivetProfileToKafka(profileDto);
 
         kafkaProducer.sendPrivetProfileToKafka(profileDto);
@@ -592,7 +640,7 @@ public class UserService {
     /**
      * Обновляет фамилию пользователя и отправляет изменённый профиль в Kafka.
      *
-     * @param id идентификатор пользователя
+     * @param id            идентификатор пользователя
      * @param newSecondName новая фамилия
      * @throws UsernameNotFoundException если пользователь не найден
      */
@@ -604,7 +652,7 @@ public class UserService {
         users.setSecondName(newSecondName);
         userRepository.save(users);
 
-        ProfileDto profileDto  = userMapper.toTestProfileDto(users);
+        ProfileDto profileDto = userMapper.toTestProfileDto(users);
         kafkaProducer.sendPrivetProfileToKafka(profileDto);
     }
 
@@ -617,7 +665,7 @@ public class UserService {
         users.setSurName(newSurName);
         userRepository.save(users);
 
-        ProfileDto profileDto  = userMapper.toTestProfileDto(users);
+        ProfileDto profileDto = userMapper.toTestProfileDto(users);
         kafkaProducer.sendPrivetProfileToKafka(profileDto);
     }
 

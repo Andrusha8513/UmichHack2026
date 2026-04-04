@@ -4,5 +4,6 @@
   "surName": "Петров",
   "password": "11111111",
   "email": "4057163@mail.ru",
-  "birthDay": "1995-05-15"
+  "birthDay": "1995-05-15",
+  "role": "ROLE_STUDENT"
 }

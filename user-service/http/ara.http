@@ -52,14 +52,29 @@ Content-Type: application/json
   "surName": "Петров",
   "password": "11111111",
   "email": "4057163@mail.ru",
-  "birthDay": "1995-05-15"
+  "birthDay": "1995-05-15",
+  "role": "ROLE_STUDENT"
+}
+
+### 2.4.2 Регистрация нового Вуза
+POST http://localhost:8765/api/users/registrationUniversity
+Content-Type: application/json
+
+{
+  "name": "ARa",
+  "secondName": "qwe",
+  "surName": "Петров",
+  "password": "11111111",
+  "email": "405716sfdsgfdssas1s3@mail.ru",
+  "role": "ROLE_UNIVERSITY",
+  "university" : "ara"
 }
 
 ### 2.5 Подтверждение регистрации по коду
-POST http://localhost:8765/api/users/confirm-registration?code=7A4845
+POST http://localhost:8765/api/users/confirm-registration?code=FA8651
 
 ### 2.6 Повторная отправка кода подтверждения
-POST http://localhost:8765/api/users/resend-confirm-registration?email=djkslsdkmds@mail.ru
+POST http://localhost:8765/api/users/resend-confirm-registration?email=4057163@mail.ru
 
 ### 2.7 Отправка кода для сброса пароля
 POST http://localhost:8765/api/users/send-password-resetCode?email=user@example.com
@@ -112,7 +127,7 @@ Authorization: Bearer {{token}}
 ### 3. Профиль (ProfileController)
 
 ### 3.1 Получить свой профиль (требуется авторизация)
-GET http://localhost:8765/profile/api/profile/myProfile/1
+GET http://localhost:8765/profile/api/profile/myProfile/3
 Authorization: Bearer {{token}}
 
 ### 3.1.2 Найту профиль друга поп почте
@@ -139,132 +154,36 @@ Authorization: Bearer {{token}}
 GET http://localhost:8765/profile/image/11
 Authorization: Bearer {{token}}
 
-### 3.5 Получить список ПВЗ пользователя
-GET http://localhost:8765/profile/api/profile/getMyPvzShort/1
+### ========== Diploma Service ==========
+
+### 1. Загрузка CSV-реестра дипломов (требуется роль UNIVERSITY)
+POST http://localhost:8765/api/v1/diplomas/upload
+Authorization: Bearer {{token}}
+X-User-Id: 1
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="ara.csv"
+Content-Type: text/csv
+
+< ./ara.csv
+--WebAppBoundary--
+
+### 2. Получение QR-кода диплома в виде PNG (требуется авторизация)
+GET http://localhost:8765/api/v1/diplomas/1/qr
 Authorization: Bearer {{token}}
 
-### 3.5 Получить Детальные данные  ПВЗ пользователя
-GET http://localhost:8765/profile/api/profile/getPvzDetailsDto/1
+### 3. Верификация диплома по загруженному изображению QR-кода
+POST http://localhost:8765/api/v1/diplomas/verify-qr
 Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
 
-### 4. Сотрудники (EmployeeController)
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="qr-code.png"
+Content-Type: image/png
 
-### 4.1 Создать сотрудника (требуется авторизация)
-POST http://localhost:8765/profile/api/employee/createEmployee/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
+< ./qr-code.png
+--WebAppBoundary--
 
-{
-  "name": "Ара",
-  "secondName": "Техник",
-  "surName": "Петров",
-  "phone": "+7189197140",
-  "fixedRatePerHour": 500.00
-}
 
-### 4.2 Удалить сотрудника по ID (требуется авторизация)
-DELETE http://localhost:8765/profile/api/employee/deleteEmployee/4
-Authorization: Bearer {{token}}
-
-### 4.3 Поиск сотрудников в ПВЗ (по имени, фамилии, отчеству)
-GET http://localhost:8765/profile/api/employee/search/1?name=Настя&secondName=&surName=
-Authorization: Bearer {{token}}
-
-### 5. Пункты выдачи (PvzController)
-
-### 5.1 Создать ПВЗ (требуется авторизация)
-POST http://localhost:8765/profile/api/pvz/createPvz
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-  "name": "ПВЗ на test",
-  "address": "ул. tessst 19"
-}
-
-### 5.2 Обновить название ПВЗ (требуется авторизация)
-PUT http://localhost:8765/profile/api/pvz/updateNamePvz/1?newName=ПВЗ на Чехова
-Authorization: Bearer {{token}}
-
-### 5.3 Обновить адрес ПВЗ (требуется авторизация)
-PUT http://localhost:8765/profile/api/pvz/updateAddressPvz/1?newName=ул. Гагарина, д. 5
-Authorization: Bearer {{token}}
-
-### 5.4 Удалить ПВЗ по ID (требуется авторизация)
-DELETE http://localhost:8765/profile/api/pvz/deletePvz/1
-Authorization: Bearer {{token}}
-
-### 6. Смены (ShiftController)
-
-### 6.1 Создать смену (требуется авторизация)
-POST http://localhost:8765/profile/api/shift/createShift
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-  "employeeId": "1",
-  "scheduledStartTime": "2026-02-03T09:00:00",
-  "scheduledEndTime": "2026-02-03T18:00:00"
-}
-### 6.2 Добавить бонус к смене (требуется авторизация)
-POST http://localhost:8765/profile/api/shift/addBonus/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-500.00
-
-### 6.3 Добавить штраф к смене (требуется авторизация)
-POST http://localhost:8765/profile/api/shift/addPenalty/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-200.00
-
-### 6.4 Добавить причину штрафа к смене (требуется авторизация)
-POST http://localhost:8765/profile/api/shift/addPenaltyReason/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-"опоздал"
-
-### 6.6 Установить фактическое время начала смены (через тело запроса)
-POST http://localhost:8765/profile/api/shift/actualStartTime/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-"2026-03-04T10:00:00"
-
-### 6.7 Установить фактическое время окончания смены (через тело запроса)
-POST http://localhost:8765/profile/api/shift/actualEndTime/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-"2026-03-04T17:00:00"
-
-### 6.8 Получить расчёт зарплаты за смену
-GET http://localhost:8765/profile/api/shift/calculatePay/1
-Authorization: Bearer {{token}}
-
-### 6.9 Обновить статус смены (PLANNED, COMPLETED, MISSED) через тело запроса
-PUT http://localhost:8765/profile/api/shift/updateStatus/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-"COMPLETED"
-
-### 6.10 Обновить сотрудника для смены
-PUT http://localhost:8765/profile/api/shift/updateEmployeeForShift/1/2
-Authorization: Bearer {{token}}
-
-### 6.11 Получить полную информацию о смене по ID (требуется авторизация)
-GET http://localhost:8765/profile/api/shift/getFullShift/1
-Authorization: Bearer {{token}}
-
-### 6.12 Получить список смен для ПВЗ (требуется авторизация)
-GET http://localhost:8765/profile/api/shift/getShiftsByPvz/1
-Authorization: Bearer {{token}}
-
-### 6.13 Получить смены сотрудника в конкретном ПВЗ (требуется авторизация)
-GET http://localhost:8765/profile/api/shift/employee/1/pvz/1
-Authorization: Bearer {{token}}
 

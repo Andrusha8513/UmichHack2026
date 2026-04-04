@@ -29,8 +29,4 @@ public class Profile {
     @JoinColumn(name = "avatar_id")
     private Image avatar;
 
-
-    @OneToMany(mappedBy = "owner" , fetch = FetchType.LAZY , orphanRemoval = true)
-    private List<Pvz> pvzs = new ArrayList<>();
-
 }

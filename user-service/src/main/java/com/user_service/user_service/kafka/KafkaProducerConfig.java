@@ -6,6 +6,7 @@ package com.user_service.user_service.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.user_service.user_service.dto.EmailRequestDto;
 import com.user_service.user_service.dto.ProfileDto;
+import com.user_service.user_service.dto.UniversityDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +48,7 @@ public class KafkaProducerConfig {
     @Bean
     public ProducerFactory<String , ProfileDto> profileDtoProducerFactory(ObjectMapper objectMapper){
         Map<String , Object> config = new HashMap<>();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG , bootstrapServers);
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG , "localhost:9092");
         JsonSerializer<ProfileDto> serializer = new JsonSerializer<>(objectMapper);
         serializer.setAddTypeInfo(false);
 
@@ -64,5 +65,28 @@ public class KafkaProducerConfig {
             ProducerFactory<String , ProfileDto> producerFactory){
                 return new KafkaTemplate<>(producerFactory);
     }
+
+    @Bean
+    public ProducerFactory<String , UniversityDto> universityDtoProducerFactory(ObjectMapper objectMapper){
+        Map<String , Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG , "localhost:9092");
+        JsonSerializer<UniversityDto> serializer = new JsonSerializer<>(objectMapper);
+        serializer.setAddTypeInfo(false);
+
+        return new DefaultKafkaProducerFactory<>(
+                config ,
+                new StringSerializer(),
+                serializer
+        );
+    }
+
+
+    @Bean
+    public KafkaTemplate<String , UniversityDto> kafkaTemplateUniversity(
+            ProducerFactory<String , UniversityDto> producerFactory){
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+
 
 }
