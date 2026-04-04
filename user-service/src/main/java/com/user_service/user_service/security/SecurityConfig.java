@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/api/users/reset-password-with-code",
                                 "/api/users/send-email-reset-code",
                                 "/api/users/resend-email-resetCode",
-                                "/auth/**"
+                                "/auth/**",
+                                "/api/ara/share/**"
                         ).permitAll()
                         .requestMatchers("/**").authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

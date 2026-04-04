@@ -5,7 +5,9 @@ import com.UmirHack2026.diploma_service.barcode.BarcodeService;
 import com.UmirHack2026.diploma_service.dto.DiplomaRecordDto;
 import com.UmirHack2026.diploma_service.entity.Diploma;
 import com.UmirHack2026.diploma_service.entity.DiplomaStatus;
+import com.UmirHack2026.diploma_service.entity.University;
 import com.UmirHack2026.diploma_service.repository.DiplomaRepository;
+import com.UmirHack2026.diploma_service.repository.UniversityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,16 +26,96 @@ public class DiplomaService {
     private final DiplomaRepository diplomaRepository;
     private final CsvParserService csvParserService;
     private final CryptoService cryptoService;
-
-    // Внедряем сервисы для работы с QR
+    private final ExcelParserService excelParserService;
     private final BarcodeService barcodeService;
     private final BarcodeDecoderService barcodeDecoderService;
+    private final UniversityRepository universityRepository;
+    private final DiplomaShareService shareService;
+
+    private List<DiplomaRecordDto> parseFile(MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        if (fileName == null) throw new RuntimeException("Имя файла отсутствует");
+        if (fileName.endsWith(".csv")) {
+            return csvParserService.parseCsv(file);
+        } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
+            return excelParserService.parseExcel(file);
+        } else {
+            throw new RuntimeException("Неподдерживаемый формат файла. Используйте CSV или Excel");
+        }
+    }
+
+//    @Transactional
+//    public void processDiplomaBatchUpload(MultipartFile file, Long universityId) {
+//        log.info("Начало обработки файла для университета с ID: {}", universityId);
+//
+//        University university = universityRepository.findById(universityId)
+//                .orElseThrow(() -> new RuntimeException("Университет с ID " + universityId + " не найден в базе данных"));
+//
+//        // ИСПРАВЛЕНО: Теперь используем parseFile для поддержки как CSV, так и Excel
+//        List<DiplomaRecordDto> parsedRecords = parseFile(file);
+//        List<Diploma> diplomasToSave = new ArrayList<>();
+//
+//        for (DiplomaRecordDto record : parsedRecords) {
+//
+//            if (diplomaRepository.existsByDiplomaNumber(record.diplomaNumber())) {
+//                continue;
+//            }
+//
+//            // ИСПРАВЛЕНО: Передаем все 7 необходимых аргументов в метод генерации хеша
+//            String hash = cryptoService.generateHash(
+//                    record.name(),
+//                    record.secondName(),
+//                    record.surName(),
+//                    record.graduationYear(),
+//                    record.specialty(),
+//                    record.diplomaNumber(),
+//                    universityId
+//            );
+//
+//            String signature = cryptoService.emulateUniversitySignature(hash, universityId);
+//
+//            String token = UUID.randomUUID().toString();
+//            String verificationUrl = "https://umir-hack.ru/verify/" + token;
+//
+//            Diploma diploma = Diploma.builder()
+//                    // Данные студента и диплома
+//                    .studentName(record.name())
+//                    .studentSecondName(record.secondName())
+//                    .studentSurName(record.surName())
+//                    .studentEmail(record.studentEmail())
+//                    .graduationYear(record.graduationYear())
+//                    .specialty(record.specialty())
+//                    .diplomaNumber(record.diplomaNumber())
+//
+//                    // Данные вуза
+//                    .universityId(university.getUniversityId()) // Поле теперь присутствует в entity
+//                    .universityName(university.getUniversityName())
+//                    .universitySecondName(university.getUniversitySecondName())
+//                    .universitySurName(university.getUniversitySurName())
+//                    .universityEmail(university.getUniversityEmail())
+//
+//                    // Системные данные
+//                    .dataHash(hash)
+//                    .signature(signature)
+//                    .status(DiplomaStatus.ACTIVE)
+//                    .qrCodeUrl(verificationUrl)
+//                    .build();
+//
+//            diplomasToSave.add(diploma);
+//        }
+//
+//        diplomaRepository.saveAll(diplomasToSave);
+//        log.info("Успешно сохранено {} дипломов", diplomasToSave.size());
+//    }
 
     @Transactional
     public void processDiplomaBatchUpload(MultipartFile file, Long universityId) {
         log.info("Начало обработки файла для университета с ID: {}", universityId);
 
-        List<DiplomaRecordDto> parsedRecords = csvParserService.parseCsv(file);
+        University university = universityRepository.findById(universityId)
+                .orElseThrow(() -> new RuntimeException("Университет с ID " + universityId + " не найден в базе данных"));
+
+        List<DiplomaRecordDto> parsedRecords = parseFile(file);
         List<Diploma> diplomasToSave = new ArrayList<>();
 
         for (DiplomaRecordDto record : parsedRecords) {
@@ -50,53 +132,59 @@ public class DiplomaService {
                     record.diplomaNumber(),
                     universityId
             );
+
             String signature = cryptoService.emulateUniversitySignature(hash, universityId);
 
-            String token = UUID.randomUUID().toString();
-            String verificationUrl = "https://umir-hack.ru/verify/" + token;
-
             Diploma diploma = Diploma.builder()
+                    .studentName(record.name())
+                    .studentSecondName(record.secondName())
+                    .studentSurName(record.surName())
+                    .studentEmail(record.studentEmail())
                     .graduationYear(record.graduationYear())
                     .specialty(record.specialty())
                     .diplomaNumber(record.diplomaNumber())
-//                    .universityId(universityId)
-                    .studentName(record.name())
-//                    .studentEmail(record.studentEmail())
+                    .universityId(university.getUniversityId())
+                    .universityName(university.getUniversityName())
+                    .universitySecondName(university.getUniversitySecondName())
+                    .universitySurName(university.getUniversitySurName())
+                    .universityEmail(university.getUniversityEmail())
+                    .university(university.getUniversity())   // если поле есть
                     .dataHash(hash)
                     .signature(signature)
                     .status(DiplomaStatus.ACTIVE)
-                    .qrCodeUrl(verificationUrl)
+                    .qrCodeUrl(null)
                     .build();
 
             diplomasToSave.add(diploma);
         }
 
-        diplomaRepository.saveAll(diplomasToSave);
-    }
 
-    /**
-     * Метод для генерации картинки QR-кода по ID диплома.
-     * Используется контроллером для отдачи PNG пользователю.
-     */
+        List<Diploma> savedDiplomas = diplomaRepository.saveAll(diplomasToSave);
+        log.info("Сохранено {} дипломов, генерируем временные ссылки", savedDiplomas.size());
+
+        // генерю ссылки через сервис шеринга и обнов qrCodeUrl
+        for (Diploma diploma : savedDiplomas) {
+            String shareLink = shareService.generateShareLink(diploma.getId());
+            diploma.setQrCodeUrl(shareLink);
+        }
+
+        // Сохраняем обновлённые дипломы с qrCodeUrl
+        diplomaRepository.saveAll(savedDiplomas);
+        log.info("Временные ссылки сгенерированы для {} дипломов", savedDiplomas.size());
+    }
     public byte[] getQrCodeImage(Long diplomaId) {
         Diploma diploma = diplomaRepository.findById(diplomaId)
                 .orElseThrow(() -> new RuntimeException("Диплом не найден"));
 
-        // BarcodeService превращает сохраненную ссылку в QR-код (byte[])
         return barcodeService.generateCode(diploma.getQrCodeUrl());
     }
 
-    /**
-     * Метод верификации диплома через загрузку файла с QR-кодом.
-     * Используется работодателем.
-     */
     public Diploma verifyDiplomaByQrFile(MultipartFile qrFile) {
-        // 1. Декодируем текст из картинки с помощью BarcodeDecoderService
         String decodedUrl = barcodeDecoderService.decoderBarcode(qrFile);
         log.info("Распознан URL из QR: {}", decodedUrl);
 
-        // 2. Ищем диплом в базе по ссылке
         return diplomaRepository.findByQrCodeUrl(decodedUrl)
                 .orElseThrow(() -> new RuntimeException("Диплом с таким QR-кодом не зарегистрирован в системе"));
     }
+
 }

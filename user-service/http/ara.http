@@ -5,7 +5,7 @@ POST http://localhost:8765/auth/sign-in
 Content-Type: application/json
 
 {
-  "email": "4057163@mail.ru",
+  "email": "405716311@mail.ru",
   "password": "11111111"
 }
 
@@ -51,7 +51,7 @@ Content-Type: application/json
   "secondName": "qwe",
   "surName": "Петров",
   "password": "11111111",
-  "email": "4057163@mail.ru",
+  "email": "405716311@mail.ru",
   "birthDay": "1995-05-15",
   "role": "ROLE_STUDENT"
 }
@@ -65,13 +65,13 @@ Content-Type: application/json
   "secondName": "qwe",
   "surName": "Петров",
   "password": "11111111",
-  "email": "405716sfdsgfdssas1s3@mail.ru",
+  "email": "4057163@mail.ru",
   "role": "ROLE_UNIVERSITY",
   "university" : "ara"
 }
 
 ### 2.5 Подтверждение регистрации по коду
-POST http://localhost:8765/api/users/confirm-registration?code=FA8651
+POST http://localhost:8765/api/users/confirm-registration?code=31F10C
 
 ### 2.6 Повторная отправка кода подтверждения
 POST http://localhost:8765/api/users/resend-confirm-registration?email=4057163@mail.ru
@@ -127,7 +127,7 @@ Authorization: Bearer {{token}}
 ### 3. Профиль (ProfileController)
 
 ### 3.1 Получить свой профиль (требуется авторизация)
-GET http://localhost:8765/profile/api/profile/myProfile/3
+GET http://localhost:8765/profile/api/profile/myProfile/2
 Authorization: Bearer {{token}}
 
 ### 3.1.2 Найту профиль друга поп почте
@@ -157,20 +157,20 @@ Authorization: Bearer {{token}}
 ### ========== Diploma Service ==========
 
 ### 1. Загрузка CSV-реестра дипломов (требуется роль UNIVERSITY)
-POST http://localhost:8765/api/v1/diplomas/upload
+POST http://localhost:8765/api/v1/diplomas/batch-upload/1
 Authorization: Bearer {{token}}
 X-User-Id: 1
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
 --WebAppBoundary
-Content-Disposition: form-data; name="file"; filename="ara.csv"
+Content-Disposition: form-data; name="file"; filename="ara3.csv"
 Content-Type: text/csv
 
-< ./ara.csv
+< ./ara3.csv
 --WebAppBoundary--
 
 ### 2. Получение QR-кода диплома в виде PNG (требуется авторизация)
-GET http://localhost:8765/api/v1/diplomas/1/qr
+GET http://localhost:8765/api/v1/diplomas/20/qr
 Authorization: Bearer {{token}}
 
 ### 3. Верификация диплома по загруженному изображению QR-кода
@@ -179,11 +179,43 @@ Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
 --WebAppBoundary
-Content-Disposition: form-data; name="file"; filename="qr-code.png"
+Content-Disposition: form-data; name="file"; filename="img.png"
 Content-Type: image/png
 
-< ./qr-code.png
+< ./img.png
 --WebAppBoundary--
 
+###
+GET http://localhost:8765/api/v1/diplomas/search?diplomaNumber=KZ-983654671
+Authorization: Bearer {{token}}
 
+
+###
+GET http://localhost:8765/api/v1/diplomas/search?studentSurName=Ivanov&studentName=Ivan&studentSecondName=Ivanovich
+Authorization: Bearer {{token}}
+
+### 4.1 Сгенерировать временную ссылку для диплома (требуется авторизация)
+# Замените 1 на реальный ID диплома
+POST http://localhost:8765/api/share/16
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 4.2 Получить данные диплома по временной ссылке (публичный доступ, без токена)
+# Токен подставьте из ответа предыдущего запроса
+GET http://localhost:8765/api/share/https://your-domain.com/api/share/98ea5b92-81e6-49f3-b802-3a239095a155
+
+### 4.1 Сгенерировать ссылку и сохранить токен
+POST http://localhost:8765/api/share/16
+Authorization: Bearer {{token}}
+
+> {%
+    let shareLink = response.body.shareLink;
+    // Извлекаем токен из ссылки: .../api/share/TOKEN
+    let token = shareLink.substring(shareLink.lastIndexOf("/") + 1);
+    client.global.set("shareToken", token);
+    client.log("Share token: " + token);
+%}
+
+### 4.2 Использовать сохранённый токен
+GET http://localhost:8765/api/ara/share/{{shareToken}}
 
