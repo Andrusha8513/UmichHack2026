@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Абушка Диплом | Мой профиль</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e8ddc5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .profile-card {
+            background: #fef7e6;
+            border-radius: 48px 32px;
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2);
+            border: 1px solid #e9dfc7;
+        }
+        .avatar {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .avatar-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #c9a03d;
+            background: #d6cba4;
+        }
+        .info-row { margin: 16px 0; }
+        .btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #7a2e3b;
+        }
+        .status { margin-top: 20px; padding: 10px; border-radius: 30px; display: none; }
+    </style>
+</head>
+<body>
+<div class="profile-card">
+    <div class="avatar">
+        <img id="avatarImg" class="avatar-img" src="" alt="Avatar">
+        <div style="margin-top: 12px;">
+            <input type="file" id="avatarUpload" accept="image/*" style="display:none">
+            <button id="uploadAvatarBtn" class="btn">Загрузить аватар</button>
+            <button id="deleteAvatarBtn" class="btn btn-outline">Удалить</button>
+        </div>
+    </div>
+    <div class="info-row"><strong>ФИО:</strong> <span id="fullName"></span></div>
+    <div class="info-row"><strong>Email:</strong> <span id="email"></span></div>
+    <div class="info-row"><strong>ID:</strong> <span id="userId"></span></div>
+    <button id="backBtn" class="btn">← На главную</button>
+    <div id="statusMsg" class="status"></div>
+</div>
+<script>
+    const BASE_URL = 'http://localhost:8765';
+    const token = localStorage.getItem('jwt_token');
+    const userId = localStorage.getItem('user_id');
+    if (!token || !userId) window.location.href = 'index.html';
+
+    async function loadProfile() {
+        const res = await fetch(`${BASE_URL}/api/profile/myProfile/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('fullName').innerText = `${data.secondName} ${data.name} ${data.surName || ''}`;
+            document.getElementById('email').innerText = data.email;
+            document.getElementById('userId').innerText = data.id;
+            if (data.avatarId) {
+                const imgRes = await fetch(`${BASE_URL}/profile/image/${data.avatarId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (imgRes.ok) {
+                    const blob = await imgRes.blob();
+                    document.getElementById('avatarImg').src = URL.createObjectURL(blob);
+                }
+            }
+        }
+    }
+    async function uploadAvatar(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(`${BASE_URL}/api/profile/setAvatar/${userId}`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData
+        });
+        if (res.ok) { showStatus('Аватар обновлён', false); loadProfile(); }
+        else showStatus('Ошибка загрузки', true);
+    }
+    async function deleteAvatar() {
+        const res = await fetch(`${BASE_URL}/api/profile/deleteAvatar/${userId}`, {
+            method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) { showStatus('Аватар удалён', false); document.getElementById('avatarImg').src = ''; }
+        else showStatus('Ошибка', true);
+    }
+    function showStatus(text, isError) {
+        const el = document.getElementById('statusMsg');
+        el.style.display = 'block';
+        el.innerText = text;
+        el.className = 'status ' + (isError ? 'error' : 'success');
+        setTimeout(() => el.style.display = 'none', 3000);
+    }
+    document.getElementById('uploadAvatarBtn').onclick = () => document.getElementById('avatarUpload').click();
+    document.getElementById('avatarUpload').onchange = e => uploadAvatar(e.target.files[0]);
+    document.getElementById('deleteAvatarBtn').onclick = deleteAvatar;
+    document.getElementById('backBtn').onclick = () => window.location.href = 'dashboard.html';
+    loadProfile();
+</script>
+</body>
+</html>

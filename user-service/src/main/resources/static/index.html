@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Абушка Диплом | Регистрация</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <title>CyberDiploma | Авторизация</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,147 +12,203 @@
             box-sizing: border-box;
         }
 
+        /* Базовые переменные темы (по умолчанию тёмная) */
         :root {
-            --deep-ink: #1a2c3e;
-            --parchment: #fef7e6;
-            --gold-accent: #c9a03d;
-            --gold-dark: #a47c2b;
-            --burgundy: #7a2e3b;
-            --dusty-rose: #bc9a9a;
-            --border-light: #e9dfc7;
-            --shadow-soft: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
-            --gradient-bg: linear-gradient(145deg, #ebe1c1 0%, #d9cd9f 100%);
+            --bg-primary: #0a0f1f;
+            --bg-secondary: #101624;
+            --surface: #181f2f;
+            --surface-hover: #1f2a3f;
+            --border-glow: #00ffc3;
+            --text-main: #e0f2fe;
+            --text-dim: #8ba0c0;
+            --accent-cyan: #00f0ff;
+            --accent-magenta: #ff00d4;
+            --accent-yellow: #ffcc00;
+            --gradient-neon: linear-gradient(135deg, #00f0ff, #ff00d4, #00ffc3);
+            --gradient-bg: radial-gradient(circle at 20% 30%, #0f172a, #030712);
+            --glow-sm: 0 0 5px rgba(0, 255, 195, 0.6);
+            --glow-md: 0 0 12px rgba(0, 240, 255, 0.5);
+            --card-border: 1px solid rgba(0, 255, 195, 0.2);
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'Orbitron', monospace;
+        }
+
+        /* Светлая тема */
+        body.light {
+            --bg-primary: #f4f9ff;
+            --bg-secondary: #e9f0fa;
+            --surface: #ffffff;
+            --surface-hover: #f0f4fc;
+            --border-glow: #0077ff;
+            --text-main: #0a1a2a;
+            --text-dim: #2c4763;
+            --accent-cyan: #0066cc;
+            --accent-magenta: #c20078;
+            --accent-yellow: #d48f00;
+            --gradient-neon: linear-gradient(135deg, #0066cc, #c20078, #00a896);
+            --gradient-bg: radial-gradient(circle at 20% 30%, #d9e6f5, #c0d4f0);
+            --glow-sm: 0 0 6px rgba(0, 102, 204, 0.4);
+            --glow-md: 0 0 14px rgba(0, 102, 204, 0.3);
+            --card-border: 1px solid rgba(0, 102, 204, 0.3);
         }
 
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            background: #e8ddc5;
-            background-image: radial-gradient(circle at 10% 20%, rgba(201, 160, 61, 0.08) 2%, transparent 2.5%),
-            radial-gradient(circle at 85% 70%, rgba(122, 46, 59, 0.05) 1.5%, transparent 2%);
-            background-size: 45px 45px, 60px 60px;
+            font-family: var(--font-sans);
+            background: var(--gradient-bg);
+            background-attachment: fixed;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            transition: background 0.2s ease, color 0.2s;
+            color: var(--text-main);
         }
 
-        .diploma-seal {
+        /* Переключатель темы */
+        .theme-switch {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 100px;
-            opacity: 0.2;
-            pointer-events: none;
-            z-index: 0;
+            top: 24px;
+            right: 24px;
+            z-index: 100;
+            background: var(--surface);
+            backdrop-filter: blur(8px);
+            padding: 8px 12px;
+            border-radius: 40px;
+            border: var(--card-border);
+            cursor: pointer;
+            font-size: 22px;
+            transition: all 0.2s;
+            box-shadow: var(--glow-sm);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .theme-switch span {
+            font-size: 14px;
+            font-weight: 500;
+            font-family: var(--font-mono);
         }
 
-        .diploma-seal svg {
-            width: 100%;
-            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
-        }
-
+        /* Контейнер кибер-стиля */
         .auth-container {
             position: relative;
             z-index: 2;
-            background: var(--parchment);
-            border-radius: 48px 32px 48px 32px;
-            box-shadow: var(--shadow-soft);
+            background: var(--surface);
+            backdrop-filter: blur(2px);
+            border-radius: 32px;
+            box-shadow: var(--glow-md), 0 25px 45px -12px rgba(0,0,0,0.5);
             width: 100%;
-            max-width: 500px;
-            padding: 36px 32px 40px;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(201, 160, 61, 0.35);
+            max-width: 520px;
+            padding: 36px 32px 42px;
+            transition: all 0.25s;
+            border: var(--card-border);
+            overflow: hidden;
         }
 
         .auth-container::before {
-            content: "";
+            content: '';
             position: absolute;
-            top: -12px;
-            left: 40px;
-            right: 40px;
-            height: 24px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 20"><path fill="%23c9a03d" fill-opacity="0.3" d="M10,10 Q30,2 50,10 T90,10 T110,5" stroke="%23c9a03d" stroke-width="1.2" fill="none"/><circle cx="10" cy="10" r="2" fill="%23c9a03d"/><circle cx="110" cy="10" r="2" fill="%23c9a03d"/></svg>') repeat-x;
-            background-size: 60px 20px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-neon);
+        }
+
+        /* неоновая рамка */
+        .glitch-border {
+            position: absolute;
+            inset: 0;
+            border-radius: 32px;
+            pointer-events: none;
+            box-shadow: 0 0 8px var(--accent-cyan), inset 0 0 6px var(--accent-magenta);
+            opacity: 0.6;
         }
 
         .auth-header {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 32px;
         }
 
         .auth-logo {
-            width: 80px;
-            height: 80px;
-            background: var(--deep-ink);
-            border-radius: 50%;
+            width: 84px;
+            height: 84px;
+            background: var(--bg-secondary);
+            border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 16px;
-            box-shadow: 0 10px 18px -6px rgba(26, 44, 62, 0.3);
-            border: 2px solid var(--gold-accent);
+            margin: 0 auto 18px;
+            border: 2px solid var(--accent-cyan);
+            box-shadow: var(--glow-sm);
+            transform: rotate(2deg);
+            transition: 0.2s;
         }
-
         .auth-logo svg {
-            width: 48px;
-            height: 48px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            width: 52px;
+            height: 52px;
+            filter: drop-shadow(0 0 4px var(--accent-cyan));
         }
 
         .auth-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
+            font-family: var(--font-mono);
+            font-size: 32px;
             font-weight: 700;
-            letter-spacing: -0.3px;
-            color: var(--deep-ink);
-            margin: 0 0 6px;
+            letter-spacing: -0.5px;
+            background: var(--gradient-neon);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 6px rgba(0,240,255,0.3);
+            margin-bottom: 8px;
         }
 
         .auth-subtitle {
-            font-size: 14px;
-            color: #5f4c3b;
-            border-top: 1px dashed var(--gold-accent);
+            font-size: 13px;
+            font-family: var(--font-mono);
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            border-top: 1px dashed var(--border-glow);
             display: inline-block;
             padding-top: 8px;
-            margin-top: 6px;
-            font-weight: 500;
+            text-transform: uppercase;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .form-group label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: #2c3e2f;
+            letter-spacing: 1px;
             margin-bottom: 6px;
-            letter-spacing: 0.3px;
             text-transform: uppercase;
-            font-family: 'Inter', sans-serif;
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
         }
 
         .form-control {
             width: 100%;
             padding: 12px 18px;
-            border: 1.5px solid var(--border-light);
-            border-radius: 28px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glow);
+            border-radius: 14px;
             font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            background: white;
-            transition: all 0.2s;
-            color: #2c2b26;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            transition: 0.2s;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--gold-accent);
-            box-shadow: 0 0 0 4px rgba(201, 160, 61, 0.2);
-            background: #fffef7;
+            border-color: var(--accent-magenta);
+            box-shadow: 0 0 0 3px rgba(255, 0, 212, 0.2), var(--glow-sm);
+            background: var(--surface);
         }
 
         .radio-group {
@@ -160,6 +216,7 @@
             gap: 24px;
             align-items: center;
             margin-top: 8px;
+            flex-wrap: wrap;
         }
         .radio-group label {
             display: flex;
@@ -167,84 +224,98 @@
             gap: 8px;
             font-weight: 500;
             text-transform: none;
-            color: var(--deep-ink);
+            font-family: var(--font-sans);
+            color: var(--text-main);
             cursor: pointer;
         }
         .radio-group input {
             width: 18px;
             height: 18px;
-            accent-color: var(--gold-accent);
+            accent-color: var(--accent-cyan);
         }
 
         .btn-submit {
             width: 100%;
-            padding: 14px 18px;
-            background: var(--deep-ink);
-            border: none;
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-cyan);
             border-radius: 40px;
             font-size: 15px;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            color: white;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--accent-cyan);
             cursor: pointer;
-            transition: all 0.25s;
+            transition: 0.2s;
             margin-top: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
         }
-
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-neon);
+            transition: 0.3s;
+            opacity: 0;
+            z-index: 0;
+        }
+        .btn-submit:hover::before {
+            left: 0;
+            opacity: 0.15;
+        }
         .btn-submit:hover {
-            background: var(--burgundy);
+            background: var(--surface-hover);
+            border-color: var(--accent-magenta);
+            box-shadow: var(--glow-md);
             transform: translateY(-2px);
-            box-shadow: 0 12px 20px -12px rgba(122, 46, 59, 0.5);
-        }
-
-        .btn-submit:active {
-            transform: translateY(1px);
+            color: var(--accent-yellow);
         }
 
         .status-message {
             margin-top: 20px;
             padding: 12px 16px;
-            border-radius: 40px;
+            border-radius: 20px;
             font-size: 13px;
             text-align: center;
             display: none;
             font-weight: 500;
+            border-left: 4px solid;
         }
-
         .status-message.error {
-            background-color: #fff0f0;
-            color: #b13e3e;
-            border-left: 4px solid #b13e3e;
+            background: rgba(255, 0, 100, 0.15);
+            color: #ff6b9d;
+            border-left-color: #ff0066;
         }
-
         .status-message.success {
-            background-color: #eef5e6;
-            color: #2f6b3c;
-            border-left: 4px solid #2f6b3c;
+            background: rgba(0, 255, 195, 0.1);
+            color: #00ffc3;
+            border-left-color: #00ffc3;
         }
 
         .footer-links {
-            margin-top: 24px;
+            margin-top: 28px;
             text-align: center;
             font-size: 13px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
-
         .footer-links a {
-            color: #8b6b3c;
+            color: var(--accent-cyan);
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
-            transition: color 0.2s;
+            transition: 0.2s;
+            font-family: var(--font-mono);
         }
-
         .footer-links a:hover {
-            color: var(--burgundy);
-            text-decoration: underline;
+            color: var(--accent-magenta);
+            text-shadow: 0 0 4px currentColor;
         }
 
         .hidden {
@@ -252,194 +323,180 @@
         }
 
         .view-section {
-            animation: fadeSlide 0.25s ease-out;
+            animation: cyberFade 0.3s ease;
         }
-
-        @keyframes fadeSlide {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes cyberFade {
+            from { opacity: 0; transform: translateY(12px); filter: blur(2px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
         @media (max-width: 500px) {
-            .auth-container {
-                padding: 28px 20px 32px;
-            }
-            .auth-title {
-                font-size: 24px;
-            }
+            .auth-container { padding: 28px 20px 32px; }
+            .auth-title { font-size: 26px; }
+            .theme-switch { top: 12px; right: 12px; padding: 5px 10px; }
         }
 
         .stamp-watermark {
             text-align: center;
-            font-size: 10px;
-            margin-top: 24px;
-            color: #cdbc8f;
+            font-size: 9px;
+            margin-top: 28px;
+            color: var(--text-dim);
             font-family: monospace;
             letter-spacing: 2px;
+            opacity: 0.6;
+        }
+        .glitch-text {
+            font-family: var(--font-mono);
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:focus {
+            transition: background-color 600000s 0s, color 600000s 0s;
+        }
+        .neon-bg {
+            background: radial-gradient(ellipse at 50% 0%, rgba(0,255,195,0.1), transparent);
         }
     </style>
 </head>
 <body>
-
-<div class="diploma-seal">
-    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="45" stroke="#c9a03d" stroke-width="1.5" stroke-dasharray="3 3"/>
-        <circle cx="50" cy="50" r="38" stroke="#7a2e3b" stroke-width="0.8"/>
-        <path d="M50 20 L55 40 L75 42 L60 55 L66 75 L50 63 L34 75 L40 55 L25 42 L45 40 Z" fill="#c9a03d" fill-opacity="0.3" stroke="#c9a03d" stroke-width="0.8"/>
-        <text x="50" y="85" text-anchor="middle" font-size="6" fill="#7a2e3b" font-weight="bold">VERITAS</text>
-    </svg>
+<div class="theme-switch" id="themeToggle">
+    <span id="themeIcon">🌙</span>
+    <span>Dark/Light</span>
 </div>
 
 <div class="auth-container">
+    <div class="glitch-border"></div>
     <div class="auth-header">
         <div class="auth-logo">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 4H20V20H4V4Z" stroke="#FEF7E6" stroke-width="1.2" fill="none"/>
-                <path d="M8 8H16M8 12H14M8 16H12" stroke="#FEF7E6" stroke-width="1.5" stroke-linecap="round"/>
-                <circle cx="17" cy="17" r="2" stroke="#FEF7E6" stroke-width="1.2"/>
-                <path d="M3 3L21 21" stroke="#FEF7E6" stroke-width="1" stroke-dasharray="2 2"/>
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                <path d="M8 8H16M8 12H14M8 16H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="17" cy="17" r="2" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M3 3L21 21" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
             </svg>
         </div>
-        <h1 class="auth-title">Абушка Диплом</h1>
-        <p class="auth-subtitle">верификация документов об образовании</p>
+        <h1 class="auth-title">CyberDiploma</h1>
+        <p class="auth-subtitle">⚡ верификация данных ⚡</p>
     </div>
 
     <!-- Логин -->
     <div id="view-login" class="view-section">
         <form onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label>📧 Электронная почта</label>
-                <input type="email" id="login-email" class="form-control" placeholder="rector@university.ru" required>
+                <label>📡 Эл. почта</label>
+                <input type="email" id="login-email" class="form-control" placeholder="admin@neon.tech" required>
             </div>
             <div class="form-group">
                 <label style="display: flex; justify-content: space-between;">
-                    <span>🔒 Пароль</span>
-                    <a onclick="switchView('view-forgot')" style="color: #9b7b4c; cursor: pointer; font-size: 12px;">забыли?</a>
+                    <span>🔐 Пароль</span>
+                    <a onclick="switchView('view-forgot')" style="color: var(--accent-magenta); cursor: pointer; font-size: 11px;">забыли?</a>
                 </label>
                 <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="btn-submit" id="btn-login">Войти в кабинет</button>
+            <button type="submit" class="btn-submit" id="btn-login">Вход в систему</button>
         </form>
         <div class="footer-links">
-            <div><span style="color: #7a6a55;">Нет аккаунта?</span> <a onclick="switchView('view-register')">Зарегистрироваться</a></div>
+            <div><span style="color: var(--text-dim);">Нет аккаунта?</span> <a onclick="switchView('view-register')">Создать профиль</a></div>
         </div>
     </div>
 
     <!-- Регистрация (с выбором роли) -->
     <div id="view-register" class="view-section hidden">
         <form onsubmit="handleRegister(event)">
-            <!-- Выбор роли -->
             <div class="form-group">
                 <label>Тип аккаунта</label>
                 <div class="radio-group">
-                    <label>
-                        <input type="radio" name="roleType" value="STUDENT" checked> Студент / Выпускник
-                    </label>
-                    <label>
-                        <input type="radio" name="roleType" value="UNIVERSITY"> Учебное заведение (Вуз)
-                    </label>
+                    <label><input type="radio" name="roleType" value="STUDENT" checked> Студент / Выпускник</label>
+                    <label><input type="radio" name="roleType" value="UNIVERSITY"> Учебное заведение</label>
                 </div>
             </div>
-
             <div class="form-group">
                 <label>Фамилия</label>
                 <input type="text" id="reg-secondName" class="form-control" placeholder="Иванов" required>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div class="form-group">
-                    <label>Имя</label>
-                    <input type="text" id="reg-name" class="form-control" placeholder="Иван" required>
-                </div>
-                <div class="form-group">
-                    <label>Отчество</label>
-                    <input type="text" id="reg-surName" class="form-control" placeholder="Иванович" required>
-                </div>
+                <div class="form-group"><label>Имя</label><input type="text" id="reg-name" class="form-control" placeholder="Иван" required></div>
+                <div class="form-group"><label>Отчество</label><input type="text" id="reg-surName" class="form-control" placeholder="Иванович" required></div>
             </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="reg-email" class="form-control" placeholder="office@university.edu" required>
-            </div>
-            <div class="form-group">
-                <label>Пароль</label>
-                <input type="password" id="reg-password" class="form-control" placeholder="минимум 8 символов" required>
-            </div>
+            <div class="form-group"><label>Email</label><input type="email" id="reg-email" class="form-control" placeholder="contact@university.cyber" required></div>
+            <div class="form-group"><label>Пароль</label><input type="password" id="reg-password" class="form-control" placeholder="минимум 8 символов" required></div>
 
-            <!-- Поле для названия вуза (изначально скрыто) -->
             <div id="university-field-group" class="form-group hidden">
-                <label>Название учебного заведения</label>
-                <input type="text" id="reg-university" class="form-control" placeholder="Например: МГУ им. Ломоносова">
+                <label>Название ВУЗа</label>
+                <input type="text" id="reg-university" class="form-control" placeholder="КиберУниверситет">
             </div>
-
             <button type="submit" class="btn-submit" id="btn-register">Создать аккаунт</button>
         </form>
         <div class="footer-links">
-            <div><span style="color: #7a6a55;">Уже зарегистрированы?</span> <a onclick="switchView('view-login')">Войти</a></div>
+            <div><span style="color: var(--text-dim);">Уже есть аккаунт?</span> <a onclick="switchView('view-login')">Войти</a></div>
         </div>
     </div>
 
-    <!-- Подтверждение кода (без изменений) -->
+    <!-- Подтверждение -->
     <div id="view-confirm" class="view-section hidden">
-        <p class="auth-subtitle" style="text-align: center; margin-bottom: 20px;">Проверьте почту — мы отправили проверочный код</p>
+        <p class="auth-subtitle" style="text-align: center;">✉️ Проверьте почту — получен код</p>
         <form onsubmit="handleConfirm(event)">
-            <div class="form-group">
-                <label>Код подтверждения</label>
-                <input type="text" id="confirm-code" class="form-control" placeholder="000000" style="text-align: center; letter-spacing: 4px; font-size: 20px;" required>
-            </div>
-            <button type="submit" class="btn-submit" id="btn-confirm">Активировать аккаунт</button>
+            <div class="form-group"><label>Код подтверждения</label><input type="text" id="confirm-code" class="form-control" style="text-align: center; letter-spacing: 5px; font-size: 22px;" placeholder="000000" required></div>
+            <button type="submit" class="btn-submit">Активировать</button>
         </form>
         <div class="footer-links">
-            <a onclick="resendConfirmCode()">📨 Отправить код повторно</a>
-            <a onclick="switchView('view-login')">← Вернуться ко входу</a>
+            <a onclick="resendConfirmCode()">🔄 Отправить код повторно</a>
+            <a onclick="switchView('view-login')">← Назад ко входу</a>
         </div>
     </div>
 
     <!-- Забыли пароль -->
     <div id="view-forgot" class="view-section hidden">
-        <p class="auth-subtitle" style="text-align: center;">Укажите email, мы вышлем инструкцию для восстановления</p>
+        <p class="auth-subtitle" style="text-align: center;">Введите email для восстановления</p>
         <form onsubmit="handleForgotPassword(event)">
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="forgot-email" class="form-control" placeholder="admin@university.ru" required>
-            </div>
-            <button type="submit" class="btn-submit" id="btn-forgot">Выслать код</button>
+            <div class="form-group"><label>Email</label><input type="email" id="forgot-email" class="form-control" required></div>
+            <button type="submit" class="btn-submit">Выслать код</button>
         </form>
-        <div class="footer-links">
-            <a onclick="switchView('view-login')">Вспомнили пароль? Войти</a>
-        </div>
+        <div class="footer-links"><a onclick="switchView('view-login')">Вспомнили пароль? Войти</a></div>
     </div>
 
     <!-- Сброс пароля -->
     <div id="view-reset" class="view-section hidden">
-        <p class="auth-subtitle" style="text-align: center;">Введите код из письма и новый пароль</p>
+        <p class="auth-subtitle" style="text-align: center;">Код из письма + новый пароль</p>
         <form onsubmit="handleResetPassword(event)">
-            <div class="form-group">
-                <label>Код сброса</label>
-                <input type="text" id="reset-code" class="form-control" placeholder="123456" style="text-align: center; letter-spacing: 4px; font-size: 20px;" required>
-            </div>
-            <div class="form-group">
-                <label>Новый пароль</label>
-                <input type="password" id="reset-new-password" class="form-control" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn-submit" id="btn-reset">Сохранить пароль</button>
+            <div class="form-group"><label>Код сброса</label><input type="text" id="reset-code" class="form-control" style="text-align: center; letter-spacing: 4px;" placeholder="123456" required></div>
+            <div class="form-group"><label>Новый пароль</label><input type="password" id="reset-new-password" class="form-control" required></div>
+            <button type="submit" class="btn-submit">Сохранить</button>
         </form>
-        <div class="footer-links">
-            <a onclick="switchView('view-login')">Вернуться ко входу</a>
-        </div>
+        <div class="footer-links"><a onclick="switchView('view-login')">← Вернуться</a></div>
     </div>
 
     <div id="global-status" class="status-message"></div>
-    <div class="stamp-watermark">⚜️ государственная система верификации ⚜️</div>
+    <div class="stamp-watermark">🔹 CYBER VERIFICATION SYSTEM v.2.0 🔹</div>
 </div>
 
 <script>
     const BASE_URL = 'http://157.22.175.181:8765';
     let currentProcessEmail = '';
+
+    // Тема
+    function initTheme() {
+        const saved = localStorage.getItem('cyberTheme');
+        if (saved === 'light') document.body.classList.add('light');
+        else document.body.classList.remove('light');
+        updateThemeIcon();
+    }
+    function toggleTheme() {
+        if (document.body.classList.contains('light')) {
+            document.body.classList.remove('light');
+            localStorage.setItem('cyberTheme', 'dark');
+        } else {
+            document.body.classList.add('light');
+            localStorage.setItem('cyberTheme', 'light');
+        }
+        updateThemeIcon();
+    }
+    function updateThemeIcon() {
+        const icon = document.getElementById('themeIcon');
+        if (document.body.classList.contains('light')) icon.innerHTML = '☀️';
+        else icon.innerHTML = '🌙';
+    }
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    initTheme();
 
     window.onload = function() {
         const token = localStorage.getItem('jwt_token');
@@ -448,27 +505,24 @@
             window.location.href = 'dashboard.html';
         }
 
-        // Отслеживаем переключение роли
         const radioStudent = document.querySelector('input[value="STUDENT"]');
         const radioUniversity = document.querySelector('input[value="UNIVERSITY"]');
         const universityFieldGroup = document.getElementById('university-field-group');
         const universityInput = document.getElementById('reg-university');
 
         function toggleUniversityField() {
-            if (radioUniversity.checked) {
+            if (radioUniversity && radioUniversity.checked) {
                 universityFieldGroup.classList.remove('hidden');
                 universityInput.required = true;
             } else {
                 universityFieldGroup.classList.add('hidden');
-                universityInput.required = false;
-                universityInput.value = '';
+                if (universityInput) universityInput.required = false;
             }
         }
-
         if (radioStudent && radioUniversity) {
             radioStudent.addEventListener('change', toggleUniversityField);
             radioUniversity.addEventListener('change', toggleUniversityField);
-            toggleUniversityField(); // начальное состояние
+            toggleUniversityField();
         }
     };
 
@@ -482,180 +536,118 @@
 
     function switchView(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-        document.getElementById('global-status').style.display = 'none';
+        const status = document.getElementById('global-status');
+        if (status) status.style.display = 'none';
         document.getElementById(viewId).classList.remove('hidden');
     }
 
-    // Логин (без изменений)
+    // Логин
     async function handleLogin(event) {
         event.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('btn-login');
-
-        btn.disabled = true; btn.innerText = 'Вход...';
+        btn.disabled = true; btn.innerText = 'Аутентификация...';
 
         try {
-            const response = await fetch(`${BASE_URL}/auth/sign-in`, {
+            const resp = await fetch(`${BASE_URL}/auth/sign-in`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-
-            if (response.ok) {
-                const data = await response.json();
+            if (resp.ok) {
+                const data = await resp.json();
                 const token = data.accessToken || data.token || data.jwt;
-                if (!token) { showStatus('Ошибка: Сервер не вернул токен', true); btn.disabled = false; btn.innerText = 'Войти в кабинет'; return; }
-
-                try {
-                    const base64Url = token.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }).join(''));
-                    const payload = JSON.parse(jsonPayload);
-                    const finalUserId = payload.userId || data.userId || data.id;
-                    if (!finalUserId) { showStatus('Ошибка: Не удалось найти ID', true); btn.disabled = false; btn.innerText = 'Войти в кабинет'; return; }
-
-                    localStorage.setItem('jwt_token', token);
-                    localStorage.setItem('user_id', finalUserId);
-                    showStatus('Успешный вход! Перенаправление...', false);
-                    setTimeout(() => window.location.href = 'dashboard.html', 500);
-                } catch (e) { showStatus('Ошибка расшифровки токена', true); btn.disabled = false; btn.innerText = 'Войти в кабинет'; }
+                if (!token) throw new Error('Token missing');
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                const payload = JSON.parse(jsonPayload);
+                const userId = payload.userId || data.userId || data.id;
+                localStorage.setItem('jwt_token', token);
+                localStorage.setItem('user_id', userId);
+                showStatus('Доступ разрешён! Перенаправление...', false);
+                setTimeout(() => window.location.href = 'dashboard.html', 600);
             } else {
-                const errorMsg = await response.text();
-                showStatus(errorMsg || 'Неверный логин или пароль', true);
-                btn.disabled = false; btn.innerText = 'Войти в кабинет';
+                const err = await resp.text();
+                showStatus(err || 'Ошибка авторизации', true);
             }
-        } catch (error) {
-            showStatus('Ошибка подключения к серверу', true);
-            btn.disabled = false; btn.innerText = 'Войти в кабинет';
-        }
+        } catch(e) { showStatus('Ошибка сети', true); }
+        finally { btn.disabled = false; btn.innerText = 'Вход в систему'; }
     }
 
-    // Регистрация с учётом роли
+    // Регистрация
     async function handleRegister(event) {
         event.preventDefault();
-
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
         const name = document.getElementById('reg-name').value;
         const secondName = document.getElementById('reg-secondName').value;
         const surName = document.getElementById('reg-surName').value;
-
         const roleRadio = document.querySelector('input[name="roleType"]:checked');
         const role = roleRadio ? roleRadio.value : 'STUDENT';
-
         const btn = document.getElementById('btn-register');
-        btn.disabled = true;
-        btn.innerText = 'Отправка...';
+        btn.disabled = true; btn.innerText = 'Отправка...';
 
         try {
             if (role === 'UNIVERSITY') {
-                // Регистрация вуза
-                const universityName = document.getElementById('reg-university').value.trim();
-                if (!universityName) {
-                    showStatus('Укажите название учебного заведения', true);
-                    btn.disabled = false; btn.innerText = 'Создать аккаунт';
-                    return;
-                }
-                const payload = {
-                    name,
-                    secondName,
-                    surName,
-                    password,
-                    email,
-                    role: 'ROLE_UNIVERSITY',
-                    university: universityName
-                };
-                const response = await fetch(`${BASE_URL}/api/users/registrationUniversity`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                const university = document.getElementById('reg-university').value.trim();
+                if (!university) { showStatus('Укажите название ВУЗа', true); btn.disabled = false; btn.innerText = 'Создать аккаунт'; return; }
+                const payload = { name, secondName, surName, password, email, role: 'ROLE_UNIVERSITY', university };
+                const resp = await fetch(`${BASE_URL}/api/users/registrationUniversity`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
-                if (response.ok) {
-                    currentProcessEmail = email;
-                    showStatus('Вуз зарегистрирован! Код подтверждения отправлен на email.', false);
-                    switchView('view-confirm');
-                } else {
-                    const text = await response.text();
-                    showStatus(text || 'Ошибка регистрации вуза', true);
-                }
+                if (resp.ok) { currentProcessEmail = email; showStatus('ВУЗ зарегистрирован! Код на почте.', false); switchView('view-confirm'); }
+                else { const text = await resp.text(); showStatus(text || 'Ошибка регистрации', true); }
             } else {
-                // Регистрация студента (старый эндпоинт)
                 const payload = { email, password, name, secondName, surName };
-                const response = await fetch(`${BASE_URL}/api/users/registration`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                const resp = await fetch(`${BASE_URL}/api/users/registration`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
-                if (response.ok) {
-                    currentProcessEmail = email;
-                    showStatus('Успешно! Отправлен код подтверждения.', false);
-                    switchView('view-confirm');
-                } else {
-                    const text = await response.text();
-                    showStatus(text || 'Ошибка при регистрации', true);
-                }
+                if (resp.ok) { currentProcessEmail = email; showStatus('Код подтверждения отправлен', false); switchView('view-confirm'); }
+                else { const text = await resp.text(); showStatus(text || 'Ошибка', true); }
             }
-        } catch (e) {
-            showStatus('Ошибка сети', true);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = 'Создать аккаунт';
-        }
+        } catch(e) { showStatus('Ошибка сети', true); }
+        finally { btn.disabled = false; btn.innerText = 'Создать аккаунт'; }
     }
 
-    // Остальные функции (подтверждение, сброс пароля) без изменений
+    // Подтверждение
     async function handleConfirm(event) {
         event.preventDefault();
         const code = document.getElementById('confirm-code').value;
-        const btn = document.getElementById('btn-confirm');
-        btn.disabled = true; btn.innerText = 'Проверка...';
+        const btn = event.submitter;
+        if(btn) btn.disabled = true;
         try {
-            const response = await fetch(`${BASE_URL}/api/users/confirm-registration?code=${encodeURIComponent(code)}`, { method: 'POST' });
-            const text = await response.text();
-            if (response.ok) {
-                showStatus(text || 'Аккаунт подтвержден! Теперь вы можете войти.', false);
-                document.getElementById('login-email').value = currentProcessEmail;
-                switchView('view-login');
-            } else {
-                showStatus(text || 'Неверный код', true);
-            }
-        } catch (e) { showStatus('Ошибка сети', true); }
-        finally { btn.disabled = false; btn.innerText = 'Подтвердить аккаунт'; }
+            const resp = await fetch(`${BASE_URL}/api/users/confirm-registration?code=${encodeURIComponent(code)}`, { method: 'POST' });
+            const text = await resp.text();
+            if (resp.ok) { showStatus(text || 'Аккаунт активирован!', false); document.getElementById('login-email').value = currentProcessEmail; switchView('view-login'); }
+            else showStatus(text || 'Неверный код', true);
+        } catch(e) { showStatus('Ошибка', true); }
+        finally { if(btn) btn.disabled = false; }
     }
 
     async function resendConfirmCode() {
-        if (!currentProcessEmail) {
-            showStatus('Почта неизвестна. Повторите регистрацию.', true); return;
-        }
-        showStatus('Отправка...', false);
+        if (!currentProcessEmail) { showStatus('Email неизвестен, повторите регистрацию', true); return; }
         try {
-            const response = await fetch(`${BASE_URL}/api/users/resend-confirm-registration?email=${encodeURIComponent(currentProcessEmail)}`, { method: 'POST' });
-            const text = await response.text();
-            if (response.ok) showStatus(text || 'Код отправлен повторно', false);
-            else showStatus(text || 'Ошибка отправки', true);
-        } catch (e) { showStatus('Ошибка сети', true); }
+            const resp = await fetch(`${BASE_URL}/api/users/resend-confirm-registration?email=${encodeURIComponent(currentProcessEmail)}`, { method: 'POST' });
+            const text = await resp.text();
+            if (resp.ok) showStatus('Код отправлен повторно', false);
+            else showStatus(text || 'Ошибка', true);
+        } catch(e) { showStatus('Ошибка сети', true); }
     }
 
     async function handleForgotPassword(event) {
         event.preventDefault();
         const email = document.getElementById('forgot-email').value;
         const btn = document.getElementById('btn-forgot');
-        btn.disabled = true; btn.innerText = 'Отправка...';
+        if(btn) btn.disabled = true;
         try {
-            const response = await fetch(`${BASE_URL}/api/users/send-password-resetCode?email=${encodeURIComponent(email)}`, { method: 'POST' });
-            const text = await response.text();
-            if (response.ok) {
-                currentProcessEmail = email;
-                showStatus(text || 'Код отправлен на почту', false);
-                switchView('view-reset');
-            } else {
-                showStatus(text || 'Ошибка отправки', true);
-            }
-        } catch (e) { showStatus('Ошибка сети', true); }
-        finally { btn.disabled = false; btn.innerText = 'Получить код'; }
+            const resp = await fetch(`${BASE_URL}/api/users/send-password-resetCode?email=${encodeURIComponent(email)}`, { method: 'POST' });
+            const text = await resp.text();
+            if (resp.ok) { currentProcessEmail = email; showStatus('Код отправлен на почту', false); switchView('view-reset'); }
+            else showStatus(text || 'Ошибка', true);
+        } catch(e) { showStatus('Ошибка', true); }
+        finally { if(btn) btn.disabled = false; }
     }
 
     async function handleResetPassword(event) {
@@ -663,22 +655,15 @@
         const code = document.getElementById('reset-code').value;
         const newPassword = document.getElementById('reset-new-password').value;
         const btn = document.getElementById('btn-reset');
-        if (!currentProcessEmail) {
-            showStatus('Почта неизвестна. Вернитесь назад.', true); return;
-        }
-        btn.disabled = true; btn.innerText = 'Сохранение...';
+        if (!currentProcessEmail) { showStatus('Почта неизвестна', true); return; }
+        if(btn) btn.disabled = true;
         try {
-            const response = await fetch(`${BASE_URL}/api/users/reset-password-with-code?email=${encodeURIComponent(currentProcessEmail)}&code=${encodeURIComponent(code)}&newPassword=${encodeURIComponent(newPassword)}`, { method: 'POST' });
-            const text = await response.text();
-            if (response.ok) {
-                showStatus(text || 'Пароль изменен! Войдите с новым паролем.', false);
-                document.getElementById('login-email').value = currentProcessEmail;
-                switchView('view-login');
-            } else {
-                showStatus(text || 'Ошибка сброса пароля', true);
-            }
-        } catch (e) { showStatus('Ошибка сети', true); }
-        finally { btn.disabled = false; btn.innerText = 'Установить пароль'; }
+            const resp = await fetch(`${BASE_URL}/api/users/reset-password-with-code?email=${encodeURIComponent(currentProcessEmail)}&code=${encodeURIComponent(code)}&newPassword=${encodeURIComponent(newPassword)}`, { method: 'POST' });
+            const text = await resp.text();
+            if (resp.ok) { showStatus('Пароль изменён! Войдите', false); document.getElementById('login-email').value = currentProcessEmail; switchView('view-login'); }
+            else showStatus(text || 'Ошибка сброса', true);
+        } catch(e) { showStatus('Ошибка', true); }
+        finally { if(btn) btn.disabled = false; }
     }
 </script>
 </body>

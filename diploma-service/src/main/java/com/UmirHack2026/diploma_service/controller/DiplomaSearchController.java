@@ -21,15 +21,13 @@ public class DiplomaSearchController {
 
     private final DiplomaSearchService diplomaSearchService;
 
-    // Пример: GET http://localhost:8765/api/v1/diplomas/search?diplomaNumber=KZ-983654671
-    //Authorization: Bearer {{token}}
     @GetMapping(params = "diplomaNumber")
     public ResponseEntity<List<DiplomaPublicDto>> searchByDiplomaNumber(@RequestParam String diplomaNumber) {
         List<DiplomaPublicDto> result = diplomaSearchService.findByDiplomaNumber(diplomaNumber);
         return ResponseEntity.ok(result);
     }
 
-    // Пример: GET /api/v1/diplomas/search?surName=Иванов&name=Иван&secondName=Иванович
+
     @GetMapping(params = {"surName", "name"})
     public ResponseEntity<List<DiplomaPublicDto>> searchByFullName(
             @RequestParam String surName,

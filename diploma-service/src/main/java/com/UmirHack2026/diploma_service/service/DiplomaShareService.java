@@ -27,18 +27,12 @@ public class DiplomaShareService {
     @Value("${app.share.base-url}")
     private String baseUrl;
 
-    /**
-     * Генерирует временную ссылку для диплома.
-     * @param diplomaId ID диплома
-     * @return полная URL-ссылка для отправки работодателю
-     */
+
     @Transactional
     public String generateShareLink(Long diplomaId) {
-        // проверяем существование диплома
         Diploma diploma = diplomaRepository.findById(diplomaId)
                 .orElseThrow(() -> new IllegalArgumentException("Diploma not found with id: " + diplomaId));
 
-        // создаём уникальный токен
         String token = UUID.randomUUID().toString();
         LocalDateTime expiry = LocalDateTime.now().plusHours(expirationHours);
 
@@ -50,17 +44,11 @@ public class DiplomaShareService {
 
         tokenRepository.save(shareToken);
 
-        // формируем полную ссылку (базовый URL можно вынести в конфиг)
-//        String baseUrl = "https://your-domain.com/api/ara/share";
+
         return baseUrl + "/" + token;
     }
 
-    /**
-     * Получение диплома по токену с проверкой срока действия.
-     * @param token уникальный токен
-     * @return Diploma (или DTO) если токен валиден
-     * @throws RuntimeException если токен не найден или просрочен
-     */
+
     @Transactional(readOnly = true)
     public Diploma getDiplomaByShareToken(String token) {
         DiplomaShareToken shareToken = tokenRepository.findByToken(token)
@@ -74,9 +62,7 @@ public class DiplomaShareService {
                 .orElseThrow(() -> new RuntimeException("Диплом не найден"));
     }
 
-    /**
-     * Периодическая очистка просроченных токенов (можно вызвать по расписанию).
-     */
+
     @Transactional
     public void cleanExpiredTokens() {
         tokenRepository.deleteAllByExpiryDateBefore(LocalDateTime.now());

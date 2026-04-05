@@ -1,6 +1,7 @@
 package com.UmirHack2026.diploma_service.dto;
 
 public record DiplomaPublicDto (
+        Long id,
         String studentName,
         String studentSecondName,
         String studentSurName,

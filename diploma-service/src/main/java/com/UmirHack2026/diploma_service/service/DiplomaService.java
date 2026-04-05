@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -44,69 +45,6 @@ public class DiplomaService {
         }
     }
 
-//    @Transactional
-//    public void processDiplomaBatchUpload(MultipartFile file, Long universityId) {
-//        log.info("Начало обработки файла для университета с ID: {}", universityId);
-//
-//        University university = universityRepository.findById(universityId)
-//                .orElseThrow(() -> new RuntimeException("Университет с ID " + universityId + " не найден в базе данных"));
-//
-//        // ИСПРАВЛЕНО: Теперь используем parseFile для поддержки как CSV, так и Excel
-//        List<DiplomaRecordDto> parsedRecords = parseFile(file);
-//        List<Diploma> diplomasToSave = new ArrayList<>();
-//
-//        for (DiplomaRecordDto record : parsedRecords) {
-//
-//            if (diplomaRepository.existsByDiplomaNumber(record.diplomaNumber())) {
-//                continue;
-//            }
-//
-//            // ИСПРАВЛЕНО: Передаем все 7 необходимых аргументов в метод генерации хеша
-//            String hash = cryptoService.generateHash(
-//                    record.name(),
-//                    record.secondName(),
-//                    record.surName(),
-//                    record.graduationYear(),
-//                    record.specialty(),
-//                    record.diplomaNumber(),
-//                    universityId
-//            );
-//
-//            String signature = cryptoService.emulateUniversitySignature(hash, universityId);
-//
-//            String token = UUID.randomUUID().toString();
-//            String verificationUrl = "https://umir-hack.ru/verify/" + token;
-//
-//            Diploma diploma = Diploma.builder()
-//                    // Данные студента и диплома
-//                    .studentName(record.name())
-//                    .studentSecondName(record.secondName())
-//                    .studentSurName(record.surName())
-//                    .studentEmail(record.studentEmail())
-//                    .graduationYear(record.graduationYear())
-//                    .specialty(record.specialty())
-//                    .diplomaNumber(record.diplomaNumber())
-//
-//                    // Данные вуза
-//                    .universityId(university.getUniversityId()) // Поле теперь присутствует в entity
-//                    .universityName(university.getUniversityName())
-//                    .universitySecondName(university.getUniversitySecondName())
-//                    .universitySurName(university.getUniversitySurName())
-//                    .universityEmail(university.getUniversityEmail())
-//
-//                    // Системные данные
-//                    .dataHash(hash)
-//                    .signature(signature)
-//                    .status(DiplomaStatus.ACTIVE)
-//                    .qrCodeUrl(verificationUrl)
-//                    .build();
-//
-//            diplomasToSave.add(diploma);
-//        }
-//
-//        diplomaRepository.saveAll(diplomasToSave);
-//        log.info("Успешно сохранено {} дипломов", diplomasToSave.size());
-//    }
 
     @Transactional
     public void processDiplomaBatchUpload(MultipartFile file, Long universityId) {
@@ -187,4 +125,24 @@ public class DiplomaService {
                 .orElseThrow(() -> new RuntimeException("Диплом с таким QR-кодом не зарегистрирован в системе"));
     }
 
+
+    @Transactional
+    public Diploma changeDiplomaStatus(Long diplomaId, DiplomaStatus newStatus, Long universityId) {
+        Diploma diploma = diplomaRepository.findById(diplomaId)
+                .orElseThrow(() -> new RuntimeException("Диплом не найден"));
+
+
+        if (!diploma.getUniversityId().equals(universityId)) {
+            throw new RuntimeException("У вас нет прав на изменение этого диплома");
+        }
+
+        diploma.setStatus(newStatus);
+        if (newStatus == DiplomaStatus.REVOKED) {
+            diploma.setRevokedAt(LocalDateTime.now());
+        } else {
+            diploma.setRevokedAt(null); // если снова активируем
+        }
+
+        return diplomaRepository.save(diploma);
+    }
 }

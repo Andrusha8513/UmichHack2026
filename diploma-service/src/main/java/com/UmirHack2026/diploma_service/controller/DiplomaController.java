@@ -2,6 +2,7 @@ package com.UmirHack2026.diploma_service.controller;
 
 import com.UmirHack2026.diploma_service.barcode.BarcodeService;
 import com.UmirHack2026.diploma_service.entity.Diploma;
+import com.UmirHack2026.diploma_service.entity.DiplomaStatus;
 import com.UmirHack2026.diploma_service.service.DiplomaService;
 import com.UmirHack2026.diploma_service.service.DiplomaShareService;
 import com.example.support_module.security.CustomUserDetails;
@@ -29,9 +30,7 @@ public class DiplomaController {
     private final DiplomaShareService shareService;
     private final BarcodeService barcodeService;
 
-    /**
-     * Эндпоинт для загрузки реестра (CSV)
-     */
+
     @PostMapping("/batch-upload/{universityId}")
     public ResponseEntity<String> uploadDiplomas(
             @RequestParam("file") MultipartFile file,
@@ -49,10 +48,8 @@ public class DiplomaController {
     }
 
 
-    /**
-     * Получение QR-кода диплома в виде PNG картинки.
-     * Эту ссылку можно вставлять прямо в <img src="..."> на фронтенде.
-     */
+
+    //Получение QR-кода диплома в виде PNG картинки.
     @GetMapping(value = "/{id}/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getDiplomaQrCode(@PathVariable Long id) {
         log.info("Запрос QR-кода для диплома с ID: {}", id);
@@ -64,10 +61,6 @@ public class DiplomaController {
                 .body(qrCodeImage);
     }
 
-    /**
-     * Верификация диплома по загруженной фотографии/скриншоту QR-кода.
-     * Возвращает полные данные диплома, если он найден.
-     */
     @PostMapping("/verify-qr")
     public ResponseEntity<?> verifyByQrFile(@RequestParam("file") MultipartFile file) {
         log.info("Запрос на верификацию диплома через файл: {}", file.getOriginalFilename());
@@ -88,12 +81,24 @@ public class DiplomaController {
 
     @GetMapping("/{diplomaId}/qr-share")
     public ResponseEntity<byte[]> getQrCodeWithShareLink(@PathVariable Long diplomaId) {
-        // Генерируем временную ссылку (токен + TTL)
         String shareLink = shareService.generateShareLink(diplomaId);
-        // Генерируем QR-код из этой ссылки
         byte[] qrImage = barcodeService.generateCode(shareLink);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .body(qrImage);
+    }
+
+    @PutMapping("/{diplomaId}/status")
+    public ResponseEntity<?> changeStatus(
+            @PathVariable Long diplomaId,
+            @RequestParam DiplomaStatus status,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
+            Long universityId = customUserDetails.getId();
+            Diploma updated = diplomaService.changeDiplomaStatus(diplomaId, status, universityId);
+            return ResponseEntity.ok(Map.of("message", "Статус изменён", "status", updated.getStatus()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

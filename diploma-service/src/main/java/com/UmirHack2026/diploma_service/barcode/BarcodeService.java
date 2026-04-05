@@ -16,8 +16,9 @@ import java.io.ByteArrayOutputStream;
 public class BarcodeService {
 
     public byte[] generateCode(String barcode){
+        int size = 500;
         try{
-            BitMatrix bitMatrix = new MultiFormatWriter().encode(barcode , BarcodeFormat.QR_CODE , 400 , 120);
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(barcode, BarcodeFormat.QR_CODE, size, size);
             BufferedImage image =  MatrixToImageWriter.toBufferedImage(bitMatrix);
             ByteArrayOutputStream byt = new ByteArrayOutputStream();
             ImageIO.write(image , "png" , byt);
